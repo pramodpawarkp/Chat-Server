@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include "../include/client_handler.h"
 #include "../include/protocol.h"
+#include "../include/router.h"
 
 void* handle_client(void* arg)
 {
@@ -25,6 +26,7 @@ void* handle_client(void* arg)
         if (bytes <= 0)
         {
             printf("Client disconnected: %d\n", client_socket);
+            remove_client(client_socket);
             break;
         }
 
@@ -36,13 +38,14 @@ void* handle_client(void* arg)
         {
             case CMD_LOGIN:
                 strcpy(username, data);
+                set_username(client_socket, username);
                 printf("Client %d logged in as %s\n", client_socket, username);
                 send(client_socket, "Login successful\n", 17, 0);
                 break;
 
             case CMD_MSG:
                 printf("%s: %s\n", username, data);
-                send(client_socket, "Message received\n", 18, 0);
+                broadcast_message(client_socket, data);
                 break;
 
             default:

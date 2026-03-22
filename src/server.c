@@ -6,6 +6,7 @@
 #include "../include/server.h"
 #include <pthread.h>
 #include "../include/client_handler.h"
+#include "../include/router.h"
 
 void start_server(int port)
 {
@@ -38,6 +39,8 @@ void start_server(int port)
         client_socket = accept(server_fd, NULL, NULL);
 
         printf("New client connected: %d\n", client_socket);
+
+        add_client(client_socket);
 
         // Allocate memory for thread argument
         int* pclient = malloc(sizeof(int));
