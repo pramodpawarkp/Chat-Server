@@ -4,17 +4,19 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include "../include/server.h"
+#include <pthread.h>
+#include "../include/client_handler.h"
 
 void start_server(int port)
 {
     int server_fd, client_socket;
     struct sockaddr_in address;
-    int clients[MAX_CLIENTS];
-    int client_count = 0;
+    // int clients[MAX_CLIENTS];
+    // //int client_count = 0;
 
-    // Initialize clients
-    for (int i = 0; i < MAX_CLIENTS; i++)
-        clients[i] = -1;
+    // // Initialize clients
+    // for (int i = 0; i < MAX_CLIENTS; i++)
+    //     clients[i] = -1;
 
     // Create socket
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -37,24 +39,17 @@ void start_server(int port)
 
         printf("New client connected: %d\n", client_socket);
 
-        // Store client
-        if (client_count < MAX_CLIENTS)
-        {
-            clients[client_count++] = client_socket;
-        }
-        else
-        {
-            printf("Max clients reached!\n");
-            close(client_socket);
-        }
+        // Allocate memory for thread argument
+        int* pclient = malloc(sizeof(int));
+        *pclient = client_socket;
 
-        // Print connected clients
-        printf("Clients: ");
-        for (int i = 0; i < client_count; i++)
-        {
-            printf("%d ", clients[i]);
-        }
-        printf("\n");
+        pthread_t tid;
+
+        // Create thread
+        pthread_create(&tid, NULL, handle_client, pclient);
+
+        // Detach thread (auto cleanup)
+        pthread_detach(tid);
     }
 
     close(server_fd);

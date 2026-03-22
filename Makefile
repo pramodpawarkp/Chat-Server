@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -pthread
 
-SRC = src/main.c src/server.c
+SRC = src/main.c src/server.c src/client_handler.c
 OUT = build/server
 
 all:
