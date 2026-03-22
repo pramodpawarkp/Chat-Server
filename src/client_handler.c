@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include "../include/client_handler.h"
+#include "../include/protocol.h"
 
 void* handle_client(void* arg)
 {
@@ -11,12 +12,15 @@ void* handle_client(void* arg)
     free(arg); // important
 
     char buffer[1024];
+    char command[50];
+    char data[1024];
+    char username[50] = "Anonymous";
 
     printf("Thread started for client: %d\n", client_socket);
 
     while (1)
     {
-        int bytes = recv(client_socket, buffer, sizeof(buffer), 0);
+        int bytes = recv(client_socket, buffer, sizeof(buffer)-1, 0);
 
         if (bytes <= 0)
         {
@@ -26,10 +30,25 @@ void* handle_client(void* arg)
 
         buffer[bytes] = '\0';
 
-        printf("Client %d: %s\n", client_socket, buffer);
+        int cmd = parse_message(buffer, command, data);
 
-        // Echo back
-        send(client_socket, buffer, strlen(buffer), 0);
+        switch (cmd)
+        {
+            case CMD_LOGIN:
+                strcpy(username, data);
+                printf("Client %d logged in as %s\n", client_socket, username);
+                send(client_socket, "Login successful\n", 17, 0);
+                break;
+
+            case CMD_MSG:
+                printf("%s: %s\n", username, data);
+                send(client_socket, "Message received\n", 18, 0);
+                break;
+
+            default:
+                send(client_socket, "Invalid command\n", 16, 0);
+                break;
+        }
     }
 
     close(client_socket);
