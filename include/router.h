@@ -12,5 +12,6 @@ void add_client(int socket);
 void remove_client(int socket);
 void set_username(int socket, char* username);
 void broadcast_message(int sender_socket, char* message);
-
+void send_private_message(int sender_socket, char* target, char* message);
+void list_users(int client_socket);
 #endif

@@ -20,5 +20,11 @@ int parse_message(char* input, char* command, char* data)
     if (strcmp(command, "MSG") == 0)
         return CMD_MSG;
 
+    if (strcmp(command, "PMSG") == 0)
+        return CMD_PMSG;
+
+    if (strcmp(command, "LIST") == 0)
+        return CMD_LIST;
+
     return CMD_UNKNOWN;
 }

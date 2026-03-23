@@ -7,6 +7,11 @@
 #include "../include/protocol.h"
 #include "../include/router.h"
 
+static void trim_eol(char *s)
+{
+    s[strcspn(s, "\r\n")] = '\0';
+}
+
 void* handle_client(void* arg)
 {
     int client_socket = *(int*)arg;
@@ -33,6 +38,7 @@ void* handle_client(void* arg)
         buffer[bytes] = '\0';
 
         int cmd = parse_message(buffer, command, data);
+        trim_eol(data);
 
         switch (cmd)
         {
@@ -46,6 +52,29 @@ void* handle_client(void* arg)
             case CMD_MSG:
                 printf("%s: %s\n", username, data);
                 broadcast_message(client_socket, data);
+                break;
+
+            case CMD_PMSG:
+            {
+                char* target = strtok(data, ":");
+                char* message = strtok(NULL, "");
+
+                if (target) trim_eol(target);
+                if (message) trim_eol(message);
+
+                if (target && message)
+                {
+                    send_private_message(client_socket, target, message);
+                }
+                else
+                {
+                    send(client_socket, "Invalid PMSG format\n", 21, 0);
+                }
+                break;
+            }
+
+            case CMD_LIST:
+                list_users(client_socket);
                 break;
 
             default:
